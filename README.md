@@ -46,6 +46,7 @@ A *denied* spend is still a valid signed event: GREEN means "authentic record", 
 - **Phase 1** — web verifier (Next.js/TS) with the GREEN/RED moment. ✅
 - **Phase 2** — `emit_receipt` from a mock spend + hardcoded policy (allow/deny). ✅
 - **Phase 3** — Stripe (test mode) + Hermes skill. ✅
+- **Phase 4** — runs inside NVIDIA NemoClaw (Hermes + hosted Nemotron). ✅ — see [packages/nemoclaw](packages/nemoclaw/README.md)
 
 ## Quickstart (Python)
 

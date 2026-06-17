@@ -40,6 +40,7 @@
 - **Phase 1** — TS web verifier, the GREEN/RED moment, cross-language guard. ✅
 - **Phase 2** — `emit_receipt` from a mock spend + hardcoded policy (allow/deny). ✅
 - **Phase 3** — Stripe (test mode) + Hermes skill. ✅ (real test-mode charges verified in an isolated sandbox)
-- **Phase 4** — NemoClaw / Nemotron runtime (cuttable).
+- **Phase 4** — NemoClaw / Nemotron runtime. ✅ (glyph runs inside the Hermes sandbox on
+  hosted Nemotron 3 Super 120B; receipts signed inside verify GREEN on the host)
 - **Phase 5** — agent-to-agent verification before delivery.
 - **Phase 6** — polish + record.
