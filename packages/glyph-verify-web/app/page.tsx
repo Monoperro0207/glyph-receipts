@@ -122,6 +122,9 @@ export default function Page() {
         <button className="btn" onClick={() => loadDemo("/emitted_ledger.jsonl")}>
           <span className="k">load</span> ledger with a denied spend
         </button>
+        <button className="btn green" onClick={() => loadDemo("/stripe_ledger.jsonl")}>
+          <span className="k">load</span> real Stripe receipts
+        </button>
         <button className="btn red" onClick={() => loadDemo("/tamper_ledger.jsonl")}>
           <span className="k">load</span> tampered ledger
         </button>
@@ -173,7 +176,8 @@ export default function Page() {
                     {a.description && <div className="desc">{a.description}</div>}
                     {r.ok ? (
                       <div className="hash">
-                        payload_hash {String(r.receipt?.payload_hash ?? "").slice(0, 24)}…
+                        {a.stripe_ref ? `stripe ${a.stripe_ref} · ` : ""}
+                        payload_hash {String(r.receipt?.payload_hash ?? "").slice(0, 20)}…
                       </div>
                     ) : (
                       <div className="fail">

@@ -45,7 +45,7 @@ A *denied* spend is still a valid signed event: GREEN means "authentic record", 
 - **Phase 0** — `glyph-core` (Python): schema, keys, receipt, ledger, verify + tests. ✅
 - **Phase 1** — web verifier (Next.js/TS) with the GREEN/RED moment. ✅
 - **Phase 2** — `emit_receipt` from a mock spend + hardcoded policy (allow/deny). ✅
-- **Phase 3** — Stripe (test mode) + Hermes skill. 🚧
+- **Phase 3** — Stripe (test mode) + Hermes skill. ✅
 
 ## Quickstart (Python)
 

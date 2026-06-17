@@ -39,7 +39,7 @@
 - **Phase 0** — `glyph-core`: schema, keys, receipt, ledger, verify, CLI. ✅
 - **Phase 1** — TS web verifier, the GREEN/RED moment, cross-language guard. ✅
 - **Phase 2** — `emit_receipt` from a mock spend + hardcoded policy (allow/deny). ✅
-- **Phase 3** — Stripe (test mode) + Hermes skill. 🚧
+- **Phase 3** — Stripe (test mode) + Hermes skill. ✅ (real test-mode charges verified in an isolated sandbox)
 - **Phase 4** — NemoClaw / Nemotron runtime (cuttable).
 - **Phase 5** — agent-to-agent verification before delivery.
 - **Phase 6** — polish + record.
