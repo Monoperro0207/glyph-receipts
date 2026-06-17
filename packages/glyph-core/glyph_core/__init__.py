@@ -4,6 +4,8 @@ from .keys import gen_keypair, public_of, sign, verify_sig, save_keypair, load_k
 from .receipt import build_receipt, compute_payload_hash
 from .ledger import append_jsonl, read_jsonl, last_receipt
 from .verify import verify_ledger, verify_receipt
+from .emit import emit_receipt
+from . import policy
 
 __all__ = [
     "CORE_FIELDS",
@@ -23,4 +25,6 @@ __all__ = [
     "last_receipt",
     "verify_ledger",
     "verify_receipt",
+    "emit_receipt",
+    "policy",
 ]

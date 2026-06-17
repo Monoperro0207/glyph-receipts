@@ -5,6 +5,7 @@ import argparse
 import sys
 
 from . import keys, ledger
+from .emit import emit_receipt
 from .verify import verify_ledger
 
 GREEN = "\033[32m"
@@ -19,6 +20,26 @@ def cmd_keygen(args: argparse.Namespace) -> int:
     path = keys.save_keypair(priv, pub, args.out) if args.out else keys.save_keypair(priv, pub)
     print(f"{GREEN}✓{RESET} keypair written to {BOLD}{path}{RESET}")
     print(f"  pubkey: {pub}")
+    return 0
+
+
+def cmd_emit(args: argparse.Namespace) -> int:
+    priv, _ = keys.load_keypair(args.key) if args.key else keys.load_keypair()
+    spend = {
+        "amount": args.amount,
+        "merchant": args.merchant,
+        "currency": args.currency,
+        "stripe_ref": args.ref,
+        "description": args.description,
+    }
+    receipt = emit_receipt(spend, priv_hex=priv, agent_id=args.agent, ledger_path=args.ledger)
+    decision = receipt["policy"]["decision"]
+    color = GREEN if decision == "allow" else "\033[33m"  # amber for deny
+    print(
+        f"{color}● {decision.upper()}{RESET}  seq {receipt['seq']}  "
+        f"${args.amount / 100:.2f} → {args.merchant}  {DIM}{receipt['policy']['result_detail']}{RESET}"
+    )
+    print(f"  appended to {BOLD}{args.ledger}{RESET}")
     return 0
 
 
@@ -57,6 +78,17 @@ def main(argv: list[str] | None = None) -> int:
     p_keygen = sub.add_parser("keygen", help="generate an ed25519 agent keypair")
     p_keygen.add_argument("--out", help="path to write the keypair (default ~/.glyph/agent.key)")
     p_keygen.set_defaults(func=cmd_keygen)
+
+    p_emit = sub.add_parser("emit", help="emit a signed receipt from a spend")
+    p_emit.add_argument("--amount", type=int, required=True, help="amount in cents")
+    p_emit.add_argument("--merchant", required=True)
+    p_emit.add_argument("--currency", default="usd")
+    p_emit.add_argument("--ref", help="stripe payment reference (allowed spends)")
+    p_emit.add_argument("--description", default="")
+    p_emit.add_argument("--agent", default="agent-glyph", help="agent id")
+    p_emit.add_argument("--ledger", default="ledger.jsonl", help="ledger .jsonl to append to")
+    p_emit.add_argument("--key", help="keypair path (default ~/.glyph/agent.key)")
+    p_emit.set_defaults(func=cmd_emit)
 
     p_verify = sub.add_parser("verify", help="verify a ledger.jsonl")
     p_verify.add_argument("path", help="path to a ledger .jsonl file")

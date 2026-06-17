@@ -119,6 +119,9 @@ export default function Page() {
         <button className="btn green" onClick={() => loadDemo("/seed_ledger.jsonl")}>
           <span className="k">load</span> valid ledger
         </button>
+        <button className="btn" onClick={() => loadDemo("/emitted_ledger.jsonl")}>
+          <span className="k">load</span> ledger with a denied spend
+        </button>
         <button className="btn red" onClick={() => loadDemo("/tamper_ledger.jsonl")}>
           <span className="k">load</span> tampered ledger
         </button>
@@ -146,6 +149,7 @@ export default function Page() {
           <div className="cards">
             {results.map((r) => {
               const a = r.receipt?.action ?? {};
+              const decision = r.receipt?.policy?.decision;
               return (
                 <div key={r.index} className={`card ${r.ok ? "ok" : "bad"}`}>
                   <div className="seqcol">
@@ -160,6 +164,11 @@ export default function Page() {
                           : String(a.amount)}
                       </span>{" "}
                       <span className="merchant">→ {a.merchant ?? "?"}</span>
+                      {decision === "deny" && (
+                        <span className="polchip deny" title={r.receipt?.policy?.result_detail}>
+                          policy: denied
+                        </span>
+                      )}
                     </div>
                     {a.description && <div className="desc">{a.description}</div>}
                     {r.ok ? (
