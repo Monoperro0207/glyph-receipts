@@ -6,6 +6,7 @@ import sys
 
 from . import keys, ledger
 from .emit import emit_receipt
+from .stripe_spend import stripe_spend
 from .verify import verify_ledger
 
 GREEN = "\033[32m"
@@ -39,6 +40,33 @@ def cmd_emit(args: argparse.Namespace) -> int:
         f"{color}● {decision.upper()}{RESET}  seq {receipt['seq']}  "
         f"${args.amount / 100:.2f} → {args.merchant}  {DIM}{receipt['policy']['result_detail']}{RESET}"
     )
+    print(f"  appended to {BOLD}{args.ledger}{RESET}")
+    return 0
+
+
+AMBER = "\033[33m"
+
+
+def cmd_spend(args: argparse.Namespace) -> int:
+    priv, _ = keys.load_keypair(args.key) if args.key else keys.load_keypair()
+    receipt, status = stripe_spend(
+        amount=args.amount,
+        merchant=args.merchant,
+        description=args.description,
+        currency=args.currency,
+        priv_hex=priv,
+        agent_id=args.agent,
+        ledger_path=args.ledger,
+    )
+    decision = receipt["policy"]["decision"]
+    ref = receipt["action"]["stripe_ref"]
+    if decision == "allow":
+        tag = f"{GREEN}● ALLOW{RESET}"
+        charge = f"  stripe {DIM}{ref}{RESET} ({status})"
+    else:
+        tag = f"{AMBER}● DENY{RESET}"
+        charge = f"  {DIM}{receipt['policy']['result_detail']} — no charge{RESET}"
+    print(f"{tag}  seq {receipt['seq']}  ${args.amount / 100:.2f} → {args.merchant}{charge}")
     print(f"  appended to {BOLD}{args.ledger}{RESET}")
     return 0
 
@@ -89,6 +117,16 @@ def main(argv: list[str] | None = None) -> int:
     p_emit.add_argument("--ledger", default="ledger.jsonl", help="ledger .jsonl to append to")
     p_emit.add_argument("--key", help="keypair path (default ~/.glyph/agent.key)")
     p_emit.set_defaults(func=cmd_emit)
+
+    p_spend = sub.add_parser("spend", help="charge Stripe (test mode) and emit a receipt")
+    p_spend.add_argument("--amount", type=int, required=True, help="amount in cents")
+    p_spend.add_argument("--merchant", required=True)
+    p_spend.add_argument("--currency", default="usd")
+    p_spend.add_argument("--description", default="")
+    p_spend.add_argument("--agent", default="agent-glyph", help="agent id")
+    p_spend.add_argument("--ledger", default="ledger.jsonl", help="ledger .jsonl to append to")
+    p_spend.add_argument("--key", help="keypair path (default ~/.glyph/agent.key)")
+    p_spend.set_defaults(func=cmd_spend)
 
     p_verify = sub.add_parser("verify", help="verify a ledger.jsonl")
     p_verify.add_argument("path", help="path to a ledger .jsonl file")

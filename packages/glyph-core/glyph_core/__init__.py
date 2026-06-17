@@ -5,6 +5,7 @@ from .receipt import build_receipt, compute_payload_hash
 from .ledger import append_jsonl, read_jsonl, last_receipt
 from .verify import verify_ledger, verify_receipt
 from .emit import emit_receipt
+from .stripe_spend import stripe_spend
 from . import policy
 
 __all__ = [
@@ -26,5 +27,6 @@ __all__ = [
     "verify_ledger",
     "verify_receipt",
     "emit_receipt",
+    "stripe_spend",
     "policy",
 ]

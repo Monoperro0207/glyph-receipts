@@ -1,34 +1,45 @@
-# Reglas del proyecto Glyph Receipts
+# Glyph Receipts — project rules
 
-- Objetivo: ganar un hackathon con un demo de 3 min. **Demo-first.**
-- NO avances de fase hasta cumplir el Definition of Done de la actual.
-- NO construyas: DSL de políticas, multi-tenant, DB, dinero real, self-host de modelo.
-- Política = hardcodeada (límite por tx + allowlist). Punto.
-- El verificador web se reimplementa en TS (la *lógica* de los 4 chequeos), pero la
-  canonicalización/hash se reusa de `@glyphp/core` para garantizar bytes idénticos a Python.
-- Canonicalización JSON obligatoria (JCS / RFC 8785) en AMBOS lados.
-- Stripe siempre en TEST MODE.
-- Antes de escribir código nuevo no listado en el plan, pregunta.
+- Goal: win a hackathon with a 3-minute demo. **Demo-first.**
+- Do NOT advance a phase until the current phase's Definition of Done is met.
+- Do NOT build: a policy DSL, multi-tenancy, a database, real money, or a self-hosted model.
+- Policy = hardcoded (per-transaction limit + allowlist). That's it.
+- The web verifier reimplements the *logic* (the four checks) from scratch in TypeScript,
+  but reuses canonicalization/hashing from `@glyphp/core` so the bytes are identical to Python.
+- JSON canonicalization (JCS / RFC 8785) is mandatory on both sides.
+- Stripe is always in TEST MODE.
+- Before writing new code that isn't in the plan, ask.
+- All repository documentation, code comments, and commit messages are written in English.
 
-## Decisiones congeladas (confirmadas)
+## Locked decisions (confirmed)
 
-1. **Crypto core = reusar `glyph-protocol`.** `glyph-core` depende del paquete PyPI
-   `glyph-protocol` para `canonical_hash`; agregamos `keygen` + `sign` con `cryptography`
-   (`Ed25519PrivateKey`), **no** pynacl. El verificador web reusa `@glyphp/core`.
-2. **Schema = recibo de pago con cadena por hash** (ver `README.md` / `schema.py`).
-3. **Encoding:** `pubkey` y `signature` en **hex** (no base64), para igualar las
-   primitivas del SDK y mantener Python↔TS byte-idéntico.
+1. **Crypto core = reuse `glyph-protocol`.** `glyph-core` depends on the PyPI package
+   `glyph-protocol` for `canonical_hash`; we add `keygen` + `sign` with `cryptography`
+   (`Ed25519PrivateKey`), **not** pynacl. The web verifier reuses `@glyphp/core`.
+2. **Schema = a payment receipt with a hash chain** (see `README.md` / `schema.py`).
+3. **Encoding:** `pubkey` and `signature` are **hex** (not base64), to match the SDK
+   primitives and keep Python↔TS byte-identical.
 
-## Convención de hashing / firma (DEBE coincidir en Python y TS)
+## Hashing / signing convention (MUST match in Python and TS)
 
-- `CORE_FIELDS` = todo menos `payload_hash` y `signature`.
-- `payload_hash = canonical_hash(core)`  → JCS (RFC 8785) + SHA-256 hex.
-- `signature = ed25519_sign(payload_hash.encode("ascii"))`, salida hex.
-- Cadena: `prev_hash[n] == payload_hash[n-1]`; génesis (`seq:0`) `prev_hash` = 64 ceros.
+- `CORE_FIELDS` = everything except `payload_hash` and `signature`.
+- `payload_hash = canonical_hash(core)` → JCS (RFC 8785) + SHA-256 hex.
+- `signature = ed25519_sign(payload_hash.encode("ascii"))`, hex output.
+- Chain: `prev_hash[n] == payload_hash[n-1]`; genesis (`seq:0`) `prev_hash` = 64 zeros.
 
-## Chequeos del verificador (en orden; reporta el PRIMERO que falle)
+## Verifier checks (in order; report the FIRST that fails)
 
-1. **signature** — firma válida contra `agent.pubkey`.
-2. **hash** — `canonical_hash(core)` recalculado == `payload_hash` guardado.
+1. **signature** — valid signature against `agent.pubkey`.
+2. **hash** — recomputed `canonical_hash(core)` == stored `payload_hash`.
 3. **chain** — `prev_hash[n] == payload_hash[n-1]`.
-4. **sequence** — `seq` monótono, sin huecos.
+4. **sequence** — `seq` monotonic, no gaps.
+
+## Phase status
+
+- **Phase 0** — `glyph-core`: schema, keys, receipt, ledger, verify, CLI. ✅
+- **Phase 1** — TS web verifier, the GREEN/RED moment, cross-language guard. ✅
+- **Phase 2** — `emit_receipt` from a mock spend + hardcoded policy (allow/deny). ✅
+- **Phase 3** — Stripe (test mode) + Hermes skill. 🚧
+- **Phase 4** — NemoClaw / Nemotron runtime (cuttable).
+- **Phase 5** — agent-to-agent verification before delivery.
+- **Phase 6** — polish + record.
